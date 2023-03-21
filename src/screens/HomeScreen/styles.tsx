@@ -1,22 +1,20 @@
 import { StyleSheet } from "react-native";
-import { colors } from "../../../utils/globalStyles";
+import { colors } from "../../utils/globalStyles";
 
 const styles = StyleSheet.create({
     container: {
-        height: '100%',
-        width: '100%',
+        flex: 1,
+        justifyContent: 'center',
+    },
+    buttonsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: colors.white,
     },
     button: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 32,
+        height: 48,
+        width: 120,
         borderRadius: 4,
-        elevation: 3,
         backgroundColor: colors.highlight,
     },
     textButton: {
@@ -24,6 +22,9 @@ const styles = StyleSheet.create({
         lineHeight: 21,
         fontWeight: 'bold',
         letterSpacing: 0.25,
+        textAlign: 'center',
+        alignContent: 'center',
+        paddingVertical: 12,
         color: colors.white,
     },
 

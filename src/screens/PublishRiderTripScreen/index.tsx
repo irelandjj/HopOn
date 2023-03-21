@@ -13,7 +13,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/RootNavigator";
 import { useNavigation } from "@react-navigation/native";
 import PressableButton from "../../components/PressableButton";
-import { colors } from "../../../utils/globalStyles";
+import { colors } from "../../utils/globalStyles";
 
 type PublishScreenNavigationProp = StackNavigationProp<
     RootStackParamList,

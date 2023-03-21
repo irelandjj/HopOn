@@ -1,13 +1,15 @@
 import { StyleSheet, Text, Platform, PermissionsAndroid } from 'react-native';
-import DiscoverRidersScreen from './src/screens/DiscoverRidersScreen';
+import DiscoverRidersScreen from './screens/DiscoverRidersScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect } from 'react';
 import Geolocation from 'react-native-geolocation-service';
 import { enableLatestRenderer } from 'react-native-maps';
-import Router from './src/navigation/RootNavigator';
-
+import Router from './navigation/RootNavigator';
+import { AwsConfig } from './config/AwsConfig';
 enableLatestRenderer();
 require('react-native-geolocation-service');
+
+AwsConfig();
 
 export default function App() {
 
