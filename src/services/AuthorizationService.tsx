@@ -1,16 +1,6 @@
 import { Auth } from 'aws-amplify';
 
-export interface IAuth {
-    signIn(username: string, password: string): Promise<void>;
-    signOut(): Promise<void>;
-    signUp(username: string, password: string): Promise<void>;
-    confirmSignUp(username: string, code: string): Promise<void>;
-    forgotPassword(username: string): Promise<void>;
-    forgotPasswordSubmit(username: string, code: string, password: string): Promise<void>;
-    currentAuthenticatedUser(): Promise<void>;
-}
-
-export const AuthorizationService: IAuth = {
+export const AuthorizationService = {
 
     signIn: async (username: string, password: string) => {
         try {
@@ -21,7 +11,7 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    signOut : async () => {
+    signOut: async () => {
         try {
             await Auth.signOut();
         } catch (error) {
@@ -30,13 +20,14 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    signUp : async (username: string, password: string) => {
+    signUp : async (username: string, name: string, password: string) => {
         try {
             await Auth.signUp({
                 username,
                 password,
                 attributes: {
                     email: username,
+                    name: name
                 },
             });
         } catch (error) {
@@ -45,7 +36,7 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    confirmSignUp : async (username: string, code: string) => {
+    confirmSignUp: async (username: string, code: string) => {
         try {
             await Auth.confirmSignUp(username, code);
         } catch (error) {
@@ -54,7 +45,7 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    forgotPassword : async (username: string) => {
+    forgotPassword: async (username: string) => {
         try {
             await Auth.forgotPassword(username);
         } catch (error) {
@@ -63,7 +54,7 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    forgotPasswordSubmit : async (username: string, code: string, password: string) => {
+    forgotPasswordSubmit: async (username: string, code: string, password: string) => {
         try {
             await Auth.forgotPasswordSubmit(username, code, password);
         } catch (error) {
@@ -72,7 +63,7 @@ export const AuthorizationService: IAuth = {
         }
     },
 
-    currentAuthenticatedUser : async () => {
+    currentAuthenticatedUser: async () => {
         try {
             const user = await Auth.currentAuthenticatedUser();
             return user;

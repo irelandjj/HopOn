@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Button, Modal, Text } from 'react-native';
-import { signUp, confirmSignUp } from '../../services/AuthorizationService';
-import { useNavigation } from '@react-navigation/native';
+import { AuthorizationService } from '../../services/AuthorizationService';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from "../../navigation/RootNavigator";
 import styles from './styles';
@@ -14,12 +14,26 @@ type SignUpScreenNavigationProp = StackNavigationProp<
 
 const SignUpScreen = () => {
   const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalEmailText, setModalEmailText] = useState<string | undefined>();
   const [modalPasswordText, setModalPasswordText] = useState<string | undefined>();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setPassword('');
+      setUsername('');
+      setName('');
+      setCode('');
+      setShowConfirmation(false);
+      setModalVisible(false);
+      setModalEmailText(undefined);
+      setModalPasswordText(undefined);
+    }, [])
+  );
 
   const navigation = useNavigation<SignUpScreenNavigationProp>();
 
@@ -37,7 +51,7 @@ const SignUpScreen = () => {
   const signUpUser = async () => {
     if (isEmailValid(username) && isPasswordValid(password)) {
       try {
-        await signUp(username, password);
+        await AuthorizationService.signUp(username, name, password);
         setShowConfirmation(true);
       } catch (error) {
         console.error('Error signing up: ', error);
@@ -53,12 +67,12 @@ const SignUpScreen = () => {
 
   const confirmSignUpUser = async () => {
     try {
-      await confirmSignUp(username, code);
+      await AuthorizationService.confirmSignUp(username, code);
       try {
-        await signUp(username, password);
+        await AuthorizationService.signIn(username, password);
         navigation.navigate('Home');
       } catch (error) {
-        console.error('Error signing up: ', error);
+        console.error('Error signing in: ', error);
       }
     } catch (error) {
       console.error('Error confirming sign up: ', error);
@@ -102,6 +116,12 @@ const SignUpScreen = () => {
             onChangeText={setUsername}
             style={styles.textInput}
             inputMode="email"
+          />
+          <TextInput
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+            style={styles.textInput}
           />
           <TextInput
             placeholder="Password"

@@ -5,6 +5,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from "../../navigation/RootNavigator";
 import { AuthorizationService } from "../../services/AuthorizationService";
+import { API } from "aws-amplify";
 
 type HomeScreenNavigationProp = StackNavigationProp<
     RootStackParamList,
@@ -23,7 +24,7 @@ const HomeScreen = () => {
         } catch (error) {
             console.error('Error signing out: ', error);
         }
-    }
+    };
 
     const goToDiscoverRidersScreen = () => {
         navigation.navigate("Discover");
