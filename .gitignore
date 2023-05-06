@@ -4,6 +4,7 @@
 
 # Xcode
 #
+iOS/
 build/
 *.pbxuser
 !default.pbxuser
@@ -24,6 +25,7 @@ ios/.xcode.env.local
 
 # Android/IntelliJ
 #
+android/
 build/
 .idea
 .gradle
