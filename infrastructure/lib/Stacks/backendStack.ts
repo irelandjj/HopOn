@@ -1,28 +1,33 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as ssm from 'aws-cdk-lib/aws-ssm'
+import * as iam from 'aws-cdk-lib/aws-iam'
+import * as lambda from 'aws-cdk-lib/aws-lambda'
+import * as cognito from 'aws-cdk-lib/aws-cognito'
+import * as CustomResources from 'aws-cdk-lib/custom-resources';
+import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as ddb from 'aws-cdk-lib/aws-dynamodb'
 import { restApi } from '../Constructs/restapi/restapi';
 import * as cdk from 'aws-cdk-lib'
+import { BackendStackProps } from './schema/backendStack.schema';
 
 export class BackendStack extends Stack {
-  private tablename: string
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  private props: BackendStackProps
+  constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
-
-    this.createDynamodb('Orders')
+    this.props = props
+    this.createDynamodb('Users', 'UserID')
+    this.createDynamodb('Orders', 'OrderID')
     this.createApi()
+    this.cognitoLambdaTrigger()
 
   }
-  createDynamodb(tableName: string) {
-    const table = new ddb.Table(this, 'MyTable', {
-      partitionKey: { name: 'OrderID', type: ddb.AttributeType.STRING },
+  createDynamodb(tableName: string, partitionKey: string) {
+    new ddb.Table(this, `${tableName}-table`, {
+      partitionKey: { name: partitionKey, type: ddb.AttributeType.STRING },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       tableName: tableName,
-      removalPolicy: cdk.RemovalPolicy.DESTROY
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-    this.tablename = table.tableName
   }
   createApi() {
     new restApi(this, 'Api', {
@@ -31,14 +36,56 @@ export class BackendStack extends Stack {
       endpoints: [
         {
           endpoint: 'createOrderInDB',
-          method: 'post'
+          method: 'post',
+          envVars: {tableName: 'Orders'}
         },
       ],
-      tableName: this.tablename
     })
   }
-  
 
+  cognitoLambdaTrigger() {
+    const lambdaTrigger = new lambdanodejs.NodejsFunction(this, 'cognito-lambda-trigger', {
+      runtime:lambda.Runtime.NODEJS_18_X,
+      entry: './lib/Constructs/cognito/src/lambdaTrigger.ts',
+      environment: {
+        tableName: 'Users'
+      }
+    })
+    lambdaTrigger.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['dynamodb:PutItem'],
+      resources: ['arn:aws:dynamodb:region:account-id:table/Users'],
+    }))
+    const userPool = cognito.UserPool.fromUserPoolId(this, 'MyUserPool', this.props.userPoolId) as cognito.UserPool
+
+    new CustomResources.AwsCustomResource(this, 'UpdateUserPool', {
+      resourceType: 'Custom::UpdateUserPool',
+      onCreate: {
+        region: this.region,
+        service: 'CognitoIdentityServiceProvider',
+        action: 'updateUserPool',
+        parameters: {
+          UserPoolId: userPool.userPoolId,
+          LambdaConfig: {
+            PostConfirmation: lambdaTrigger.functionArn
+          },
+          UserAttributeUpdateSettings: { 
+            AttributesRequireVerificationBeforeUpdate: []
+          },
+        },
+        physicalResourceId: CustomResources.PhysicalResourceId.of(userPool.userPoolId),
+      },
+      policy: CustomResources.AwsCustomResourcePolicy.fromSdkCalls({ resources: CustomResources.AwsCustomResourcePolicy.ANY_RESOURCE }),
+    });
+
+    const invokeCognitoTriggerPermission = {
+      principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
+      sourceArn: userPool.userPoolArn
+    }
+
+    lambdaTrigger.addPermission('InvokePreSignUpHandlerPermission', invokeCognitoTriggerPermission)
+
+    
+  }
 }
 
   

@@ -10,4 +10,6 @@ new BackendStack(app, 'backendStack',  {env: {
   region: process.env.CDK_DEFAULT_REGION,
   account: process.env.CDK_ACCOUNT_ID,
 },
-description: 'This is the HopOn backend stack' });
+description: 'This is the HopOn backend stack',
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+userPoolId: process.env.CDK_USER_POOL_ID!});
