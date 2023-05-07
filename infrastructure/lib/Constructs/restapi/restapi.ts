@@ -14,6 +14,7 @@ interface restApiProps  {
 name: string
 srcPath: string
 endpoints: EndPoint[]
+tableName: string
 }
 
 
@@ -32,7 +33,10 @@ export class restApi extends Construct {
     this.props.endpoints.forEach((resource) => {
       const lambdafunc = new lambdanodejs.NodejsFunction(this, `${resource.endpoint}-lambda`, {
         runtime:lambda.Runtime.NODEJS_18_X,
-        entry: `${this.props.srcPath}/${resource.endpoint}.ts`
+        entry: `${this.props.srcPath}/${resource.endpoint}.ts`,
+        environment: {
+          tableName: this.props.tableName
+        }
       })
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc)
       const ressource = this.api.root.addResource(resource.endpoint)

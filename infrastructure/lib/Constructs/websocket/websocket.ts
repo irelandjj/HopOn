@@ -77,7 +77,7 @@ export class WebSocket extends Construct {
     })
 
     new apigateway.CfnStage(this, 'prod-stage', {
-        apiId: this.api.attrApiId,
-        stageName: 'production'
+      apiId: this.api.attrApiId,
+      stageName: 'production'
     })
   }}
