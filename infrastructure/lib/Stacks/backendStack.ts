@@ -12,6 +12,7 @@ import { BackendStackProps } from './schema/backendStack.schema';
 
 export class BackendStack extends Stack {
   private props: BackendStackProps
+  private userPool: cognito.UserPool
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
     this.props = props
@@ -40,9 +41,9 @@ export class BackendStack extends Stack {
           envVars: {tableName: 'Orders'}
         },
       ],
+      userPoolArn: this.userPool.userPoolArn
     })
   }
-
   cognitoLambdaTrigger() {
     const lambdaTrigger = new lambdanodejs.NodejsFunction(this, 'cognito-lambda-trigger', {
       runtime:lambda.Runtime.NODEJS_18_X,
@@ -55,7 +56,7 @@ export class BackendStack extends Stack {
       actions: ['dynamodb:PutItem'],
       resources: ['arn:aws:dynamodb:region:account-id:table/Users'],
     }))
-    const userPool = cognito.UserPool.fromUserPoolId(this, 'MyUserPool', this.props.userPoolId) as cognito.UserPool
+    this.userPool = cognito.UserPool.fromUserPoolId(this, 'MyUserPool', this.props.userPoolId) as cognito.UserPool
 
     new CustomResources.AwsCustomResource(this, 'UpdateUserPool', {
       resourceType: 'Custom::UpdateUserPool',
@@ -64,7 +65,7 @@ export class BackendStack extends Stack {
         service: 'CognitoIdentityServiceProvider',
         action: 'updateUserPool',
         parameters: {
-          UserPoolId: userPool.userPoolId,
+          UserPoolId: this.userPool.userPoolId,
           LambdaConfig: {
             PostConfirmation: lambdaTrigger.functionArn
           },
@@ -72,19 +73,16 @@ export class BackendStack extends Stack {
             AttributesRequireVerificationBeforeUpdate: []
           },
         },
-        physicalResourceId: CustomResources.PhysicalResourceId.of(userPool.userPoolId),
+        physicalResourceId: CustomResources.PhysicalResourceId.of(this.userPool.userPoolId),
       },
       policy: CustomResources.AwsCustomResourcePolicy.fromSdkCalls({ resources: CustomResources.AwsCustomResourcePolicy.ANY_RESOURCE }),
     });
 
     const invokeCognitoTriggerPermission = {
       principal: new iam.ServicePrincipal('cognito-idp.amazonaws.com'),
-      sourceArn: userPool.userPoolArn
+      sourceArn: this.userPool.userPoolArn
     }
-
     lambdaTrigger.addPermission('InvokePreSignUpHandlerPermission', invokeCognitoTriggerPermission)
-
-    
   }
 }
 
