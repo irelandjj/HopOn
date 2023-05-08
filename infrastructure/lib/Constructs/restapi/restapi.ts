@@ -7,25 +7,27 @@ type EndPoint = {
     endpoint: string,
     method:string
     envVars?: { [key: string]: string; }
+    
 }
 
 interface restApiProps  {
 name: string
 srcPath: string
 endpoints: EndPoint[]
+userPoolArn: string
 }
 
 
 export class restApi extends Construct {
   public props: restApiProps
   public api : apigateway.RestApi
+  private Authorizer: apigateway.CfnAuthorizer
   constructor(scope: Construct, id: string, props: restApiProps ) {
     super(scope, id)
 
     this.props = props
     this.createApi()
     this.createEndpoints()
-    //this.createAuthorizer()
   }
   createEndpoints() {
     this.props.endpoints.forEach((resource) => {
@@ -37,18 +39,29 @@ export class restApi extends Construct {
       })
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc)
       const ressource = this.api.root.addResource(resource.endpoint)
-      ressource.addMethod(resource.method, lambdaIntegration)
+      ressource.addMethod(resource.method, lambdaIntegration, {
+        authorizationType: apigateway.AuthorizationType.COGNITO,
+        authorizer: { authorizerId: this.Authorizer.ref}
+      })
+      
     })
   }
-  // createAuthorizer() {
         
-  // }
   createApi() {
     this.api = new apigateway.RestApi(this, 'API', {
       restApiName: `${this.props.name}-api`,
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS},
-      deploy: true
+      deploy: true,
     })
+
+    this.Authorizer = new apigateway.CfnAuthorizer(this, 'MyCognitoAuthorizer', {
+      restApiId: this.api.restApiId,
+      name: 'Authorizer',
+      type: apigateway.AuthorizationType.COGNITO,
+      identitySource: 'method.request.header.Authorization',
+      providerArns: [this.props.userPoolArn],
+    });
   }
+  
 }
