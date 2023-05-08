@@ -57,7 +57,7 @@ export class restApi extends Construct {
 
     this.Authorizer = new apigateway.CfnAuthorizer(this, 'MyCognitoAuthorizer', {
       restApiId: this.api.restApiId,
-      name: 'My Cognito Authorizer',
+      name: 'Authorizer',
       type: apigateway.AuthorizationType.COGNITO,
       identitySource: 'method.request.header.Authorization',
       providerArns: [this.props.userPoolArn],

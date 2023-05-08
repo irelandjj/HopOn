@@ -18,8 +18,8 @@ export class BackendStack extends Stack {
     this.props = props
     this.createDynamodb('Users', 'UserID')
     this.createDynamodb('Orders', 'OrderID')
-    this.createApi()
     this.cognitoLambdaTrigger()
+    this.createApi()
 
   }
   createDynamodb(tableName: string, partitionKey: string) {
