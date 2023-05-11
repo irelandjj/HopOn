@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, TextInput, SafeAreaView, Button, Pressable } from "react-native";
+import { View, Alert, ActivityIndicator, SafeAreaView, Button, Pressable } from "react-native";
 import styles from "./styles";
 import { GooglePlaceDetail, GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -14,6 +14,9 @@ import { RootStackParamList } from "../../navigation/RootNavigator";
 import { useNavigation } from "@react-navigation/native";
 import PressableButton from "../../components/PressableButton";
 import { colors } from "../../utils/globalStyles";
+import { OrderService } from "../../services/OrderService";
+import { CreateOrderPayload } from "../../shared/types/OrderTypes";
+import { RideStatus } from "../../shared/enums/RideStatus";
 
 type PublishScreenNavigationProp = StackNavigationProp<
     RootStackParamList,
@@ -25,14 +28,12 @@ const PublishRiderTripScreen = () => {
     const [destinationPlace, setDestinationPlace] = useState<any | null>(null)
     const [isPublishButtonEnabled, setIsPublishButtonEnabled] = useState(false)
     const [location, setLocation] = useState<GeoPosition | null>(null);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [isPublishingRide, setIsPublishingRide] = useState(false);
+    const [hasUserPublishedRide, setHasUserPublishedRide] = useState(false);
 
     const GOOGLE_MAPS_API_KEY = 'AIzaSyAoCyYpY6I5af35BfirFnkdpHlDMuiB6SQ';
 
     const navigation = useNavigation<PublishScreenNavigationProp>();
-
-    const origin = { latitude: 55.68443559999999, longitude: 12.5922418 };
-    const destination = { latitude: 55.6843273, longitude: 12.5733129 };
 
     const goBack = () => {
         navigation.goBack();
@@ -42,9 +43,6 @@ const PublishRiderTripScreen = () => {
     const destinationRef = useRef<any>();
 
     useEffect(() => {
-
-        console.log("originPlace: ", originPlace);
-        console.log("destinationPlace: ", destinationPlace);
         if (originPlace && destinationPlace) {
             setIsPublishButtonEnabled(true)
         }
@@ -66,8 +64,22 @@ const PublishRiderTripScreen = () => {
         );
     }, []);
 
-    const onPublish = () => {
-        console.log("publish ride");
+    const onPublishRide = async () => {
+        try {
+            const newOrderData: CreateOrderPayload = {
+                rideStatus: RideStatus.Requested,
+                pickupLocation: originPlace,
+                dropoffLocation: destinationPlace,
+            };
+
+            setIsPublishingRide(true);
+            await OrderService.createOrder(newOrderData);
+            Alert.alert('Success', 'Your ride has been published successfully!');
+        } catch (errorMessage) {
+            Alert.alert('Error', errorMessage as string);
+        } finally {
+            setIsPublishingRide(false);
+        }
     }
 
     const onChangeOriginText = (text: string) => {
@@ -188,7 +200,10 @@ const PublishRiderTripScreen = () => {
                         }}
                     />
 
-                    <PressableButton text="Publish ride" onPress={() => onPublish()} disabled={!isPublishButtonEnabled} />
+                    {isPublishingRide ?
+                        <ActivityIndicator style={styles.activityIndicator} size="large" color={colors.foreground} />
+                        : <PressableButton text="Publish ride" onPress={() => onPublishRide()} disabled={!isPublishButtonEnabled} />
+                    }
 
                     <View style={styles.originIcon} />
                     <View style={styles.line} />

@@ -52,11 +52,10 @@ const styles = StyleSheet.create({
         left: 5,
         zIndex: 100,
     },
-    publishButton: {
+    activityIndicator: {
         position: 'absolute',
         bottom: 15,
-        alignContent: 'center',
-        justifyContent: 'center',
+        alignSelf: 'center',
     }
 });
 

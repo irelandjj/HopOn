@@ -1,4 +1,6 @@
-import { Amplify } from 'aws-amplify';
+import { Amplify, Auth } from 'aws-amplify';
+
+export const apiName = 'HopOnAPI';
 
 export const AwsConfig = () => {
 
@@ -11,8 +13,11 @@ export const AwsConfig = () => {
         API: {
             endpoints: [
                 {
-                    name: 'HopOnAPI',
+                    name: apiName,
                     endpoint: 'https://kfgb2616ne.execute-api.eu-north-1.amazonaws.com/test',
+                    custom_header: async () => {
+                        return { Authorization: `${(await Auth.currentSession()).getIdToken().getJwtToken()}` }
+                    }
                 }
             ]
         },
