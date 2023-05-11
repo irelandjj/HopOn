@@ -1,4 +1,4 @@
-import { AuthorizationService } from '../src/services/AuthorizationService';
+import { AuthorizationService } from '../../src/services/AuthorizationService';
 import { Auth } from 'aws-amplify';
 
 jest.mock('aws-amplify', () => ({
