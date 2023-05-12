@@ -1,20 +1,18 @@
 import { Amplify, Auth } from 'aws-amplify';
-
-export const apiName = 'HopOnAPI';
+import {API_NAME, USER_POOL_ID, USER_POOL_WEB_CLIENT_ID, API_ENDPOINT} from "@env"
 
 export const AwsConfig = () => {
-
     Amplify.configure({
         Auth: {
-            userPoolId: 'eu-north-1_PgVfj0qFh',
-            userPoolWebClientId: '37rob8ag1pohnrvnil5nbkvkch',
+            userPoolId: USER_POOL_ID,
+            userPoolWebClientId: USER_POOL_WEB_CLIENT_ID,
             mandatorySignIn: true,
         },
         API: {
             endpoints: [
                 {
-                    name: apiName,
-                    endpoint: 'https://kfgb2616ne.execute-api.eu-north-1.amazonaws.com/test',
+                    name: API_NAME,
+                    endpoint: API_ENDPOINT,
                     custom_header: async () => {
                         return { Authorization: `${(await Auth.currentSession()).getIdToken().getJwtToken()}` }
                     }
