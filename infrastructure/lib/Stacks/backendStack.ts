@@ -7,6 +7,7 @@ import * as CustomResources from 'aws-cdk-lib/custom-resources';
 import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as ddb from 'aws-cdk-lib/aws-dynamodb'
 import { restApi } from '../Constructs/restapi/restapi';
+import { WebSocket } from '../Constructs/websocket/websocket';
 import * as cdk from 'aws-cdk-lib'
 import { BackendStackProps } from './schema/backendStack.schema';
 
@@ -18,9 +19,14 @@ export class BackendStack extends Stack {
     this.props = props
     this.createDynamodb('Users', 'UserID')
     this.createDynamodb('Orders', 'OrderID')
+    this.createDynamodb('DriversConnection', 'ConnectionID')
     this.cognitoLambdaTrigger()
     this.createApi()
+    this.createWebSocketApi()
 
+  }
+  createWebSocketApi() {
+    new WebSocket(this, 'SocketApi')
   }
   createDynamodb(tableName: string, partitionKey: string) {
     new ddb.Table(this, `${tableName}-table`, {

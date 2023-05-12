@@ -1,26 +1,18 @@
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
+
 import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as iam from 'aws-cdk-lib/aws-iam'
-import * as apigatewayv2integrations from '@aws-cdk/aws-apigatewayv2-integrations';
 import { Construct } from 'constructs';
-import { IamResource } from 'aws-cdk-lib/aws-appsync';
 import * as cdk from 'aws-cdk-lib';
 
-export interface WebSocketProps {
-    name: string
-    lambdaSg: ec2.SecurityGroup
-}
 
 export class WebSocket extends Construct {
-  private props: WebSocketProps
   public api: apigateway.CfnApi
   private routes: apigateway.CfnRoute[] = []
   private role: iam.Role
-  constructor(scope: Construct, id: string, props: WebSocketProps) {
+  constructor(scope: Construct, id: string) {
     super(scope, id);
-    this.props = props
     const srcroot = './lib/constructs/websocket/src'
 
     this.createApi()
@@ -31,19 +23,20 @@ export class WebSocket extends Construct {
 
   }
   createApi() {
-    this.api = new apigateway.CfnApi(this, 'api', {
-      name: 'WSApi',
-      protocolType: 'WEBSOCKET',
-      routeSelectionExpression: '$request.body.action'
-    })
-
     this.role = new iam.Role(this, 'role', {
       assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com')
     })
-
     this.role.addToPolicy(new iam.PolicyStatement({
       resources: ['*'],
-      actions: ['lambda:InvokeFunction'] }))
+      actions: ['*'] }))
+
+    this.api = new apigateway.CfnApi(this, 'api', {
+      name: 'WSApi',
+      protocolType: 'WEBSOCKET',
+      routeSelectionExpression: '$request.body.action',
+      apiKeySelectionExpression: '$request.header.x-api-key',
+    })
+
   }
   createRoute(name: string, entry: string) {
     const routeLambda = new lambdanodejs.NodejsFunction(this, `${name}-lambda`, {
@@ -51,7 +44,7 @@ export class WebSocket extends Construct {
       entry: entry
     })
     
-    routeLambda.addPermission('invoke', {
+    routeLambda.addPermission(`${name}-invoke`, {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
       action: 'lambda:InvokeFunction',
       sourceAccount: cdk.Stack.of(this).account
@@ -64,6 +57,7 @@ export class WebSocket extends Construct {
     this.routes.push( new apigateway.CfnRoute(this, `${name}-route`, {
       apiId: this.api.attrApiId,
       routeKey: name,
+      authorizationType: 'NONE',
       target: `integrations/${integration.ref}`
     }))
   }
@@ -78,6 +72,6 @@ export class WebSocket extends Construct {
 
     new apigateway.CfnStage(this, 'prod-stage', {
       apiId: this.api.attrApiId,
-      stageName: 'production'
+      stageName: 'prod',
     })
   }}
