@@ -17,7 +17,7 @@ export class WebSocket extends Construct {
 
     this.createApi()
     this.createRoute('$connect', `${srcroot}/connect.ts`)
-    //this.createRoute('$disconnect', `${srcroot}/connect.ts`)
+    this.createRoute('$disconnect', `${srcroot}/connect.ts`)
     //this.createRoute('$send', `${srcroot}/connect.ts`)
     this.createDeployment()
 
@@ -28,7 +28,7 @@ export class WebSocket extends Construct {
     })
     this.role.addToPolicy(new iam.PolicyStatement({
       resources: ['*'],
-      actions: ['*'] }))
+      actions: ['*'], })),
 
     this.api = new apigateway.CfnApi(this, 'api', {
       name: 'WSApi',
@@ -43,11 +43,10 @@ export class WebSocket extends Construct {
       runtime:lambda.Runtime.NODEJS_18_X,
       entry: entry
     })
-    
     routeLambda.addPermission(`${name}-invoke`, {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
       action: 'lambda:InvokeFunction',
-      sourceAccount: cdk.Stack.of(this).account
+      sourceArn: `arn:aws:execute-api:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:${this.api.attrApiId}/*/${name}`
     })
     const integration = new apigateway.CfnIntegration(this, `${name}-integration`, {
       apiId: this.api.attrApiId,
@@ -73,5 +72,6 @@ export class WebSocket extends Construct {
     new apigateway.CfnStage(this, 'prod-stage', {
       apiId: this.api.attrApiId,
       stageName: 'prod',
+      autoDeploy: true
     })
   }}
