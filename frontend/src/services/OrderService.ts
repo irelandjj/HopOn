@@ -1,5 +1,5 @@
 import { API } from 'aws-amplify';
-import { apiName } from '../config/AwsConfig';
+import {API_NAME} from "@env"
 import { CreateOrderPayload, UpdateOrderPayload } from '../shared/types/OrderTypes';
 import { CREATE_ORDER_PATH, UPDATE_ORDER_PATH } from '../constants/apiPaths';
 
@@ -13,7 +13,7 @@ async function createOrderApi(path: string, data: CreateOrderPayload) {
     };
 
     try {
-        const response = await API.post(apiName, path, request);
+        const response = await API.post(API_NAME, path, request);
         return response;
     } catch (error: any) {
         console.error(`Error calling POST ${path}:`, error.message, '->', error.response.data.message);
@@ -31,7 +31,7 @@ async function updateOrderApi(path: string, data: UpdateOrderPayload) {
     };
 
     try {
-        const response = await API.put(apiName, path, request);
+        const response = await API.put(API_NAME, path, request);
         return response;
     } catch (error) {
         console.error(`Error calling PUT ${path}:`, error);
