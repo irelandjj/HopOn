@@ -2,11 +2,15 @@ import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as apigateway from 'aws-cdk-lib/aws-apigateway'
+import * as iam from 'aws-cdk-lib/aws-iam'
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
+import { Role } from 'aws-cdk-lib/aws-iam';
 
 type EndPoint = {
     endpoint: string,
     method:string
     envVars?: { [key: string]: string; }
+    managedPolicy: string
     
 }
 
@@ -37,6 +41,7 @@ export class restApi extends Construct {
         entry: `${this.props.srcPath}/${resource.endpoint}.ts`,
         environment: environment
       })
+      lambdafunc.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName(resource.managedPolicy))
       const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc)
       const ressource = this.api.root.addResource(resource.endpoint)
       ressource.addMethod(resource.method, lambdaIntegration, {
