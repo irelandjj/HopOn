@@ -1,9 +1,9 @@
 import { API } from 'aws-amplify';
-import {API_NAME} from "@env"
+import {API_NAME, API_PATH_ORDERS} from "@env"
 import { CreateOrderPayload, UpdateOrderPayload } from '../shared/types/OrderTypes';
-import { CREATE_ORDER_PATH, UPDATE_ORDER_PATH } from '../constants/apiPaths';
 
 async function createOrderApi(path: string, data: CreateOrderPayload) {
+    console.log(API_PATH_ORDERS);
     const request = {
         body: data,
         headers: {
@@ -16,7 +16,7 @@ async function createOrderApi(path: string, data: CreateOrderPayload) {
         const response = await API.post(API_NAME, path, request);
         return response;
     } catch (error: any) {
-        console.error(`Error calling POST ${path}:`, error.message, '->', error.response.data.message);
+        console.error(`Error calling POST /${path}:`, error.message, '->', error.response.data.message);
         throw error.response.data.message;
     }
 }
@@ -41,10 +41,10 @@ async function updateOrderApi(path: string, data: UpdateOrderPayload) {
 
 export const OrderService = {
     createOrder: async (orderData: CreateOrderPayload) => {
-        return createOrderApi(CREATE_ORDER_PATH, orderData);
+        return createOrderApi(API_PATH_ORDERS, orderData);
     },
 
     updateOrder: async (orderId: string, updatedData: UpdateOrderPayload) => {
-        return updateOrderApi(`${UPDATE_ORDER_PATH}/${orderId}`, updatedData);
+        return updateOrderApi(`/${API_PATH_ORDERS}/${orderId}`, updatedData);
     }
 };

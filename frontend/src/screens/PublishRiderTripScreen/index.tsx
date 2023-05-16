@@ -75,8 +75,8 @@ const PublishRiderTripScreen = () => {
             setIsPublishingRide(true);
             await OrderService.createOrder(newOrderData);
             Alert.alert('Success', 'Your ride has been published successfully!');
-        } catch (errorMessage) {
-            Alert.alert('Error', errorMessage as string);
+        } catch {
+            Alert.alert('Error', 'Error while publishing ride.');
         } finally {
             setIsPublishingRide(false);
         }
