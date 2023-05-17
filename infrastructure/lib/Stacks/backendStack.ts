@@ -44,7 +44,8 @@ export class BackendStack extends Stack {
         {
           endpoint: 'createOrderInDB',
           method: 'post',
-          envVars: {tableName: 'Orders'}
+          envVars: {tableName: 'Orders'},
+          managedPolicy: 'AmazonDynamoDBFullAccess'
         },
       ],
       userPoolArn: this.userPool.userPoolArn
