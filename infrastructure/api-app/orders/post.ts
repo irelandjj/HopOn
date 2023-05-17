@@ -2,10 +2,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import * as AWS from 'aws-sdk'
 import { v4 as uuidv4 } from 'uuid';
- 
+
 const newOrderId = uuidv4();
 
-const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 'us-east-1'})
+const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 'us-east-1' })
 
 const { tableName } = process.env
 
@@ -37,17 +37,17 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
     // Check if the request body has the required properties
     const hasValidProperties =
-            cognitoUserId &&
-            requestBody.pickupLocation &&
-            requestBody.dropoffLocation &&
-            requestBody.rideStatus;
+      cognitoUserId &&
+      requestBody.pickupLocation &&
+      requestBody.dropoffLocation &&
+      requestBody.rideStatus;
 
     if (!hasValidProperties) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           message:
-                        'Missing required parameters: Cognito user ID, pickupLocation, dropoffLocation, and rideStatus',
+            'Missing required parameters: Cognito user ID, pickupLocation, dropoffLocation, and rideStatus',
         }),
       };
     }
@@ -56,23 +56,19 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       TableName: tableName!,
       Item: {
-        'OrderID': { 'S': newOrderId },
+        'OrderID': newOrderId,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        'RiderID': { 'S': cognitoUserId! },
+        'RiderID': cognitoUserId!,
         'Origin': {
-          'M': {
-            'latitude': { 'N': requestBody.pickupLocation.latitude.toString() },
-            'longitude': { 'N': requestBody.pickupLocation.longitude.toString() },
-          },
+          'latitude': requestBody.pickupLocation.latitude,
+          'longitude': requestBody.pickupLocation.longitude,
         },
         'Destination': {
-          'M': {
-            'latitude': { 'N': requestBody.dropoffLocation.latitude.toString() },
-            'longitude': { 'N': requestBody.dropoffLocation.longitude.toString() },
-          },
+          'latitude': requestBody.dropoffLocation.latitude,
+          'longitude': requestBody.dropoffLocation.longitude,
         },
-        'RideStatus': { 'S': requestBody.rideStatus },
-        'Distance': { 'N': '10' },
+        'RideStatus': requestBody.rideStatus,
+        'Distance': 10,
       }
     };
 
@@ -97,11 +93,10 @@ async function getActiveRide(cognitoUserId: string): Promise<AWS.DynamoDB.ItemLi
     IndexName: 'RiderID-index',
     KeyConditionExpression: 'RiderID = :riderId',
     ExpressionAttributeValues: {
-      ':riderId': { 'S': cognitoUserId },
-      ':completed': { 'S': 'COMPLETED' }
+      ':riderId': cognitoUserId,
+      ':completed': 'COMPLETED'
     },
     FilterExpression: 'RideStatus <> :completed',
-    Limit: 1 // Only get one active ride for the user
   };
 
   const result = await ddb.query(params).promise();

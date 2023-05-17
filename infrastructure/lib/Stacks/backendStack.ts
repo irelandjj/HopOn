@@ -14,12 +14,18 @@ import { BackendStackProps } from './schema/backendStack.schema';
 export class BackendStack extends Stack {
   private props: BackendStackProps
   private userPool: cognito.UserPool
+  private usersTable: ddb.Table
+  private ordersTable: ddb.Table
+  private driversConnectionTable: ddb.Table
+
   constructor(scope: Construct, id: string, props: BackendStackProps) {
     super(scope, id, props);
     this.props = props
-    this.createDynamodb('Users', 'UserID')
-    this.createDynamodb('Orders', 'OrderID')
-    this.createDynamodb('DriversConnection', 'ConnectionID')
+
+    this.usersTable = this.createDynamodb('Users', 'UserID')
+    this.ordersTable = this.createDynamodb('Orders', 'OrderID', 'RiderID')
+    this.driversConnectionTable = this.createDynamodb('DriversConnection', 'ConnectionID')
+    
     this.cognitoLambdaTrigger()
     this.createApi()
     this.createWebSocketApi()
@@ -28,21 +34,32 @@ export class BackendStack extends Stack {
   createWebSocketApi() {
     new WebSocket(this, 'SocketApi')
   }
-  createDynamodb(tableName: string, partitionKey: string) {
-    new ddb.Table(this, `${tableName}-table`, {
+  createDynamodb(tableName: string, partitionKey: string, gsi?: string): ddb.Table  {
+    const table = new ddb.Table(this, `${tableName}-table`, {
       partitionKey: { name: partitionKey, type: ddb.AttributeType.STRING },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       tableName: tableName,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
+  
+    // Check if gsi (global secondary index) parameter is provided
+    if (gsi) {
+      table.addGlobalSecondaryIndex({
+        indexName: `${gsi}-index`,
+        partitionKey: { name: gsi, type: ddb.AttributeType.STRING },
+      });
+    }
+
+    return table;
   }
+
   createApi() {
     new restApi(this, 'Api', {
-      name: 'testApi',
+      name: 'hopon',
       srcPath: './api-app',
       endpoints: [
         {
-          endpoint: 'createOrderInDB',
+          endpoint: 'orders',
           method: 'post',
           envVars: {tableName: 'Orders'},
           managedPolicy: 'AmazonDynamoDBFullAccess'
@@ -56,12 +73,13 @@ export class BackendStack extends Stack {
       runtime:lambda.Runtime.NODEJS_18_X,
       entry: './lib/Constructs/cognito/src/lambdaTrigger.ts',
       environment: {
-        tableName: 'Users'
+        tableName: this.usersTable.tableName
       }
-    })
+    });
+
     lambdaTrigger.addToRolePolicy(new iam.PolicyStatement({
       actions: ['dynamodb:PutItem'],
-      resources: ['arn:aws:dynamodb:region:account-id:table/Users'],
+      resources: [this.usersTable.tableArn],
     }))
     this.userPool = cognito.UserPool.fromUserPoolId(this, 'MyUserPool', this.props.userPoolId) as cognito.UserPool
 
