@@ -3,7 +3,6 @@ import {API_NAME, API_PATH_ORDERS} from "@env"
 import { CreateOrderPayload, UpdateOrderPayload } from '../shared/types/OrderTypes';
 
 async function createOrderApi(path: string, data: CreateOrderPayload) {
-    console.log(API_PATH_ORDERS);
     const request = {
         body: data,
         headers: {
@@ -41,7 +40,7 @@ async function updateOrderApi(path: string, data: UpdateOrderPayload) {
 
 export const OrderService = {
     createOrder: async (orderData: CreateOrderPayload) => {
-        return createOrderApi(API_PATH_ORDERS, orderData);
+        return createOrderApi(`/${API_PATH_ORDERS}`, orderData);
     },
 
     updateOrder: async (orderId: string, updatedData: UpdateOrderPayload) => {
