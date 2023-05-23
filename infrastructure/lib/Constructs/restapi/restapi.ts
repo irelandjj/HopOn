@@ -57,7 +57,20 @@ export class restApi extends Construct {
       },
       deploy: true,
     })
-
+    const apiRole = new iam.Role(this, 'apiRole', {
+      roleName: 'apiRole',
+      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+    });
+    
+    apiRole.addToPolicy(new iam.PolicyStatement({
+      resources: ['*'],
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'cognito-idp:DescribeUserPool',
+        'cognito-idp:DescribeUserPoolClient',
+        'cognito-idp:ListUsers'
+      ] 
+    }));
     this.Authorizer = new apigateway.CfnAuthorizer(this, 'MyCognitoAuthorizer', {
       restApiId: this.api.restApiId,
       name: 'Authorizer',
