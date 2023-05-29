@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as cdk from 'aws-cdk-lib';
 import { BackendStack } from '../lib/Stacks/backendStack';
 import * as dotenv from 'dotenv';
@@ -11,5 +12,5 @@ new BackendStack(app, 'backendStack',  {env: {
   account: process.env.CDK_ACCOUNT_ID,
 },
 description: 'This is the HopOn backend stack',
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-userPoolId: process.env.CDK_USER_POOL_ID!});
+userPoolId: process.env.CDK_USER_POOL_ID!,
+clientId: process.env.CDK_CLIENT_ID!});

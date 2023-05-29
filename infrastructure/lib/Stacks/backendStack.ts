@@ -32,7 +32,10 @@ export class BackendStack extends Stack {
 
   }
   createWebSocketApi() {
-    new WebSocket(this, 'SocketApi')
+    new WebSocket(this, 'SocketApi', {
+      userPoolId: this.userPool.userPoolId,
+      clientId: this.props.clientId,
+    })
   }
   createDynamodb(tableName: string, partitionKey: string, gsi?: string): ddb.Table  {
     const table = new ddb.Table(this, `${tableName}-table`, {
