@@ -53,7 +53,6 @@ export class BackendStack extends Stack {
         partitionKey: { name: gsi, type: ddb.AttributeType.STRING },
       });
     }
-
     return table;
   }
 
