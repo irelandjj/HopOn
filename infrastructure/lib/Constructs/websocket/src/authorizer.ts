@@ -13,9 +13,7 @@ const verifier = CognitoJwtVerifier.create({
 export const handler = async (event: APIGatewayAuthorizerEvent, _context: Context) => {
   const token = getToken(event)
   const verifyResult = await verifyToken(token)
-
   return getPolicyDocument(verifyResult.effect, event.methodArn, verifyResult.payload!.username || 'INVALID_USER')
-
 }
 
 const getToken = (event: APIGatewayAuthorizerEvent) => {
@@ -23,13 +21,12 @@ const getToken = (event: APIGatewayAuthorizerEvent) => {
     console.log('Expected "event.headers.Authorization" parameter to be set')
     return 'NOT VALID TOKEN'
   }
+  //should be the access token
   const tokenString  = event.queryStringParameters!.Authorization
   if (!tokenString) {
     console.log('Expected "eventheaders.Authorization" parameter to be set')
     return 'NOT VALID TOKEN'
   }
-  console.log('Token:'+ tokenString)
-  console.log(tokenString.match(/^Bearer (.*)$/))
   const match = tokenString.match(/^Bearer (.*)$/)
   if (!match || match.length < 2) {
     console.log(`Invalid Authorization token - ${tokenString} does not match "Bearer .*"`)
@@ -49,7 +46,7 @@ const verifyToken = async (token: string): Promise<{effect: string, payload?: Co
   }
 }
 
-const getPolicyDocument = (effect: string, principalId: string, resource: string): APIGatewayAuthorizerResult => {
+const getPolicyDocument = (effect: string, resource: string, principalId: string): APIGatewayAuthorizerResult => {
   return {
     principalId,
     policyDocument: {
