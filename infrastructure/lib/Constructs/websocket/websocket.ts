@@ -3,12 +3,14 @@ import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import * as ddb from 'aws-cdk-lib/aws-dynamodb'
 import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 
 interface WSProps {
   userPoolId: string
   clientId: string
+  tableConnections: ddb.Table
 }
 
 export class WebSocket extends Construct {
@@ -74,7 +76,17 @@ export class WebSocket extends Construct {
   createRoute(name: string, entry: string) {
     const routeLambda = new lambdanodejs.NodejsFunction(this, `${name}-lambda`, {
       runtime:lambda.Runtime.NODEJS_18_X,
-      entry: entry
+      entry: entry,
+      environment: name === '$connect' ? {
+        tableConnections: this.props.tableConnections.tableName,
+      } : {},
+      initialPolicy: 
+        [
+          new iam.PolicyStatement({
+            actions: ['dynamodb:DeleteItem', 'dynamodb:PutItem', 'dynamodb:Query', 'dynamodb:Scan', 'dynamodb:UpdateItem'],
+            resources: [this.props.tableConnections.tableArn]
+          })
+        ],
     })
     routeLambda.addPermission(`${name}-invoke`, {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
