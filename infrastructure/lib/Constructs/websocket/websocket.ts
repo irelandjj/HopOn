@@ -3,19 +3,29 @@ import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as lambdanodejs from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import * as ddb from 'aws-cdk-lib/aws-dynamodb'
 import { Construct } from 'constructs';
 import * as cdk from 'aws-cdk-lib';
 
+interface WSProps {
+  userPoolId: string
+  clientId: string
+  tableConnections: ddb.Table
+}
 
 export class WebSocket extends Construct {
+  private props: WSProps
   public api: apigateway.CfnApi
   private routes: apigateway.CfnRoute[] = []
   private role: iam.Role
-  constructor(scope: Construct, id: string) {
+  private authorizer: apigateway.CfnAuthorizer
+  constructor(scope: Construct, id: string, props: WSProps) {
     super(scope, id);
+    this.props = props
     const srcroot = './lib/constructs/websocket/src'
 
     this.createApi()
+    this.createAuthorizer(`${srcroot}/authorizer.ts`)
     this.createRoute('$connect', `${srcroot}/connect.ts`)
     this.createRoute('$disconnect', `${srcroot}/connect.ts`)
     //this.createRoute('$send', `${srcroot}/connect.ts`)
@@ -38,10 +48,45 @@ export class WebSocket extends Construct {
     })
 
   }
+  createAuthorizer(filename: string) {
+    const authorizerLambda = new lambdanodejs.NodejsFunction(this, 'wsAuthorizerLambda', {
+      entry: filename,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      environment: {
+        USER_POOL_ID: this.props.userPoolId,
+        CLIENT_ID: this.props.clientId,
+      }
+    })
+
+    authorizerLambda.addPermission(
+      'authorizerPerm', {
+        principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+        action: 'lambda:InvokeFunction'
+      }
+    )
+    this.authorizer = new apigateway.CfnAuthorizer(this, 'authorizer', {
+      apiId: this.api.attrApiId,
+      name: 'WSAuth',
+      authorizerType: 'REQUEST',
+      authorizerCredentialsArn: this.role.roleArn,
+      authorizerUri: `arn:aws:apigateway:${cdk.Stack.of(this).region}:lambda:path/2015-03-31/functions/${authorizerLambda.functionArn}/invocations`,
+      identitySource: ['route.request.querystring.Authorization']
+    })
+  }
   createRoute(name: string, entry: string) {
     const routeLambda = new lambdanodejs.NodejsFunction(this, `${name}-lambda`, {
       runtime:lambda.Runtime.NODEJS_18_X,
-      entry: entry
+      entry: entry,
+      environment: name === '$connect' ? {
+        tableConnections: this.props.tableConnections.tableName,
+      } : {},
+      initialPolicy: 
+        [
+          new iam.PolicyStatement({
+            actions: ['dynamodb:DeleteItem', 'dynamodb:PutItem', 'dynamodb:Query', 'dynamodb:Scan', 'dynamodb:UpdateItem'],
+            resources: [this.props.tableConnections.tableArn]
+          })
+        ],
     })
     routeLambda.addPermission(`${name}-invoke`, {
       principal: new iam.ServicePrincipal('apigateway.amazonaws.com'),
@@ -56,7 +101,8 @@ export class WebSocket extends Construct {
     this.routes.push( new apigateway.CfnRoute(this, `${name}-route`, {
       apiId: this.api.attrApiId,
       routeKey: name,
-      authorizationType: 'NONE',
+      authorizationType: name === '$connect' ? 'CUSTOM' :'NONE',
+      authorizerId: name === '$connect' ? this.authorizer.attrAuthorizerId : undefined,
       target: `integrations/${integration.ref}`
     }))
   }
