@@ -31,17 +31,32 @@ export class restApi extends Construct {
   }
 
   createEndpoints() {
-    this.props.endpoints.forEach((resource) => {
-        const environment = resource.envVars ? resource.envVars : {};
-        const lambdafunc = new lambdanodejs.NodejsFunction(this, `${resource.endpoint}-${resource.method}-lambda`, {
-            runtime: lambda.Runtime.NODEJS_18_X,
-            entry: `${this.props.srcPath}/${resource.endpoint}/${resource.method.toLowerCase()}.ts`,
-            environment: environment
-        });
-        lambdafunc.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName(resource.managedPolicy));
-        const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc);
+    const resources: { [key: string]: apigateway.Resource } = {};
 
-        const apiResource = this.api.root.addResource(resource.endpoint);
+    // Iterates through each endpoint configuration provided
+    this.props.endpoints.forEach((resource: EndPoint) => {
+        const environment = resource.envVars ? resource.envVars : {};
+        // Lambda function is created based on the endpoint and method
+        const lambdafunc = new lambdanodejs.NodejsFunction(this, `${resource.endpoint}-${resource.method}-lambda`, {
+          runtime: lambda.Runtime.NODEJS_18_X,
+          entry: `${this.props.srcPath}/${resource.endpoint}/${resource.method.toLowerCase()}.ts`,
+          environment: environment
+      });
+      lambdafunc.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName(resource.managedPolicy));
+      const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc);
+
+        // Check if the resource already exists
+        let apiResource: apigateway.Resource;
+        if (resources[resource.endpoint]) {
+            // Reuse the existing resource
+            apiResource = resources[resource.endpoint];
+        } else {
+            // Create a new resource and store it in the resources object
+            apiResource = this.api.root.addResource(resource.endpoint);
+            resources[resource.endpoint] = apiResource;
+        }
+
+        // Add the method to the resource
         apiResource.addMethod(resource.method, lambdaIntegration, {
             authorizationType: apigateway.AuthorizationType.COGNITO,
             authorizer: { authorizerId: this.Authorizer.ref }
@@ -61,7 +76,7 @@ export class restApi extends Construct {
       roleName: 'apiRole',
       assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
     });
-    
+
     apiRole.addToPolicy(new iam.PolicyStatement({
       resources: ['*'],
       effect: iam.Effect.ALLOW,
@@ -69,7 +84,7 @@ export class restApi extends Construct {
         'cognito-idp:DescribeUserPool',
         'cognito-idp:DescribeUserPoolClient',
         'cognito-idp:ListUsers'
-      ] 
+      ]
     }));
     this.Authorizer = new apigateway.CfnAuthorizer(this, 'MyCognitoAuthorizer', {
       restApiId: this.api.restApiId,
