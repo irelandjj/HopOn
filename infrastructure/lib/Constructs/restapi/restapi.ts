@@ -9,7 +9,6 @@ type EndPoint = {
   method: string
   envVars?: { [key: string]: string; }
   managedPolicy: string
-
 }
 
 interface restApiProps {
@@ -18,7 +17,6 @@ interface restApiProps {
   endpoints: EndPoint[]
   userPoolArn: string
 }
-
 
 export class restApi extends Construct {
   public props: restApiProps
@@ -31,23 +29,25 @@ export class restApi extends Construct {
     this.createApi()
     this.createEndpoints()
   }
+
   createEndpoints() {
     this.props.endpoints.forEach((resource) => {
-      const environment = resource.envVars ? resource.envVars : {}
-      const lambdafunc = new lambdanodejs.NodejsFunction(this, `${resource.endpoint}-${resource.method}-lambda`, {
-        runtime: lambda.Runtime.NODEJS_18_X,
-        entry: `${this.props.srcPath}/${resource.endpoint}/${resource.method}.ts`,
-        environment: environment
-      })
-      lambdafunc.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName(resource.managedPolicy))
-      const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc)
-      const ressource = this.api.root.addResource(resource.endpoint)
-      ressource.addMethod(resource.method, lambdaIntegration, {
-        authorizationType: apigateway.AuthorizationType.COGNITO,
-        authorizer: { authorizerId: this.Authorizer.ref }
-      })
-    })
-  }
+        const environment = resource.envVars ? resource.envVars : {};
+        const lambdafunc = new lambdanodejs.NodejsFunction(this, `${resource.endpoint}-${resource.method}-lambda`, {
+            runtime: lambda.Runtime.NODEJS_18_X,
+            entry: `${this.props.srcPath}/${resource.endpoint}/${resource.method.toLowerCase()}.ts`,
+            environment: environment
+        });
+        lambdafunc.role?.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName(resource.managedPolicy));
+        const lambdaIntegration = new apigateway.LambdaIntegration(lambdafunc);
+
+        const apiResource = this.api.root.addResource(resource.endpoint);
+        apiResource.addMethod(resource.method, lambdaIntegration, {
+            authorizationType: apigateway.AuthorizationType.COGNITO,
+            authorizer: { authorizerId: this.Authorizer.ref }
+        });
+    });
+}
 
   createApi() {
     this.api = new apigateway.RestApi(this, 'API', {

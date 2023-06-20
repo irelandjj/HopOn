@@ -1,5 +1,7 @@
+import { RideStatus } from "../enums/RideStatus";
+
 export interface CreateOrderPayload {
-    rideStatus: string;
+    rideStatus: RideStatus;
     pickupLocation: {
         latitude: number;
         longitude: number;
@@ -26,4 +28,8 @@ export interface UpdateOrderPayload {
     status?: string;
     price?: number;
     distance?: number;
+}
+
+export interface ActiveOrderPayload {
+    rideStatus: RideStatus;
 }

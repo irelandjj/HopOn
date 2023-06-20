@@ -1,54 +1,34 @@
-import { API } from 'aws-amplify';
-import { API_NAME, API_PATH_ORDERS } from "@env"
+import { callApi } from './ApiService';
+import { API_PATH_ORDERS } from "@env"
 import { CreateOrderPayload, UpdateOrderPayload } from '../shared/types/OrderTypes';
-
-async function createOrderApi(path: string, data: CreateOrderPayload) {
-    const request = {
-        body: data,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-    };
-
-    try {
-        const response = await API.post(API_NAME, path, request);
-        return response;
-    } catch (error: any) {
-        if (error.response && error.response.data) {
-            console.error(`Error calling POST ${path}:`, error.message, '->', error.response.data.message);
-            throw error.response.data.message;
-        } else {
-            console.error(`Error calling POST ${path}:`, error);
-            throw error;
-        }
-    }
-}
-
-async function updateOrderApi(path: string, data: UpdateOrderPayload) {
-    const request = {
-        body: data,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-    };
-
-    try {
-        const response = await API.put(API_NAME, path, request);
-        return response;
-    } catch (error) {
-        console.error(`Error calling PUT ${path}:`, error);
-        throw error;
-    }
-}
+import { RideStatus } from '../shared/enums/RideStatus';
 
 export const OrderService = {
     createOrder: async (orderData: CreateOrderPayload) => {
-        return createOrderApi(`/${API_PATH_ORDERS}`, orderData);
+        const path = `/${API_PATH_ORDERS}`;
+        return callApi('POST', path, orderData);
     },
 
-    updateOrder: async (orderId: string, updatedData: UpdateOrderPayload) => {
-        return updateOrderApi(`/${API_PATH_ORDERS}/${orderId}`, updatedData);
+    // getRiderActiveOrder: async (riderId) => {
+    //     const path = `/${API_PATH_ORDERS}?status=active&riderId=${riderId}`;
+    //     return callApi('GET', path);
+    // },
+
+    getAllOrders: async () => {
+        const path = `/${API_PATH_ORDERS}`;
+        return callApi('GET', path);
+    },
+
+    getAllActiveOrders: async () => {
+
+        const activeStatuses = [
+            RideStatus.Requested,
+            RideStatus.Accepted,
+            RideStatus.Arrived,
+            RideStatus.InProgress
+        ].join(',');
+
+        const path = `/${API_PATH_ORDERS}?rideStatus=${activeStatuses}`;
+        return callApi('GET', path);
     }
-};
+}
