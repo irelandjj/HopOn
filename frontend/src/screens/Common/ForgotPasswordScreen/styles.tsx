@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { colors } from "../../utils/globalStyles";
+import { colors } from "../../../utils/globalStyles";
 
 const styles = StyleSheet.create({
     container: {
@@ -8,10 +8,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: colors.white,
+        marginBottom: 20,
     },
     textInput: {
         height: 40,
-        width: '80%',
+        width: 200,
         margin: 12,
         padding: 10,
         backgroundColor: colors.primary,
@@ -25,7 +26,6 @@ const styles = StyleSheet.create({
       modalView: {
         margin: 20,
         backgroundColor: 'white',
-        borderRadius: 20,
         padding: 35,
         alignItems: 'center',
         shadowColor: '#000',

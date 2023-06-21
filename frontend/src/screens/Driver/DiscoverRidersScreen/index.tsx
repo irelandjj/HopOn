@@ -1,16 +1,16 @@
 import React from "react";
 import { View, FlatList, SafeAreaView, Button } from "react-native";
-import RiderPostedCard from "../../components/RiderPostedCard";
-import ridersData from "../../../assets/data/riders";
+import RiderPostedCard from "../../../components/RiderPostedCard";
+import ridersData from "../../../../assets/data/riders";
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import Icon from 'react-native-vector-icons/Ionicons';
-import RidersList from "../../components/RidersList";
-import DiscoverRidersMap from "../../components/DiscoverRidersMap";
-import BackButton from "../../components/BackButton";
+import RidersList from "../../../components/RidersList";
+import DiscoverRidersMap from "../../../components/DiscoverRidersMap";
+import BackButton from "../../../components/BackButton";
 import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from "../../navigation/RootNavigator";
+import { RootStackParamList } from "../../../navigation/RootNavigator";
 
 type DiscoverScreenNavigationProp = StackNavigationProp<
     RootStackParamList,

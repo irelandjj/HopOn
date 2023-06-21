@@ -4,7 +4,7 @@ import LoadingScreen from '../LoadingScreen';
 import HomeScreen from '../HomeScreen';
 import SignInScreen from '../SignInScreen';
 import styles from './styles';
-import { AuthorizationService } from '../../services/AuthorizationService';
+import { AuthorizationService } from '../../../services/AuthorizationService';
 
 const AuthenticationScreen = () => {
     const [isLoading, setIsLoading] = useState(true);

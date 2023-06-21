@@ -7,15 +7,15 @@ import MapViewDirections, { MapViewDirectionsOrigin } from 'react-native-maps-di
 import Icon from 'react-native-vector-icons/Ionicons';
 import Geolocation, { GeoPosition } from 'react-native-geolocation-service';
 import { TouchableWithoutFeedback, Keyboard } from "react-native";
-import BackButton from "../../components/BackButton";
+import BackButton from "../../../components/BackButton";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation/RootNavigator";
+import { RootStackParamList } from "../../../navigation/RootNavigator";
 import { useNavigation } from "@react-navigation/native";
-import PressableButton from "../../components/PressableButton";
-import { colors } from "../../utils/globalStyles";
-import { OrderService } from "../../services/OrderService";
-import { CreateOrderPayload } from "../../shared/types/OrderTypes";
-import { RideStatus } from "../../shared/enums/RideStatus";
+import PressableButton from "../../../components/PressableButton";
+import { colors } from "../../../utils/globalStyles";
+import { OrderService } from "../../../services/OrderService";
+import { CreateOrderPayload } from "../../../shared/types/OrderTypes";
+import { RideStatus } from "../../../shared/enums/RideStatus";
 import { GOOGLE_MAPS_API_KEY } from "@env"
 
 type PublishScreenNavigationProp = StackNavigationProp<

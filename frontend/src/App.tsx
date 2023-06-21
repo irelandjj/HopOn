@@ -1,5 +1,5 @@
 import { StyleSheet, Text, Platform, PermissionsAndroid } from 'react-native';
-import DiscoverRidersScreen from './screens/DiscoverRidersScreen';
+import DiscoverRidersScreen from './screens/Driver/DiscoverRidersScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect } from 'react';
 import Geolocation from 'react-native-geolocation-service';

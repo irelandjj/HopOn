@@ -3,8 +3,8 @@ import { Button, Pressable, Text, View } from "react-native";
 import styles from "./styles";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from "../../navigation/RootNavigator";
-import { AuthorizationService } from "../../services/AuthorizationService";
+import { RootStackParamList } from "../../../navigation/RootNavigator";
+import { AuthorizationService } from "../../../services/AuthorizationService";
 import { API } from "aws-amplify";
 
 type HomeScreenNavigationProp = StackNavigationProp<
