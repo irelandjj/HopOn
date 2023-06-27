@@ -12,11 +12,11 @@ export const OrderService = {
     getRiderActiveOrder: async (): Promise<any> => {
 
         const path = `/${API_PATH_ORDERS}`;
-        const params = {
+        const queryParams = {
             rideStatus: 'active',
-            riderId: AuthorizationService.getCurrentUserId()
+            riderId: await AuthorizationService.getCurrentUserId()
         }
-        return callApi('GET', path, params);
+        return callApi('GET', path, undefined, queryParams);
     },
 
     getAllActiveOrders: async (): Promise<any> => {

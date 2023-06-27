@@ -1,13 +1,14 @@
 import { API } from 'aws-amplify';
 import { API_NAME } from "@env"
 
-export async function callApi(method: string, path: string, data?: any) {
+export async function callApi(method: string, path: string, data?: any, queryParams?: any) {
   const request = {
-    body: data,
+    body: method === 'POST' ? data : undefined,
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
+    queryStringParameters: method === 'GET' ? queryParams : undefined
   };
 
   try {
@@ -27,7 +28,7 @@ export async function callApi(method: string, path: string, data?: any) {
     return response;
   } catch (error: any) {
     if (error.response && error.response.data) {
-      console.error(`Error calling ${method} ${path}:`, error.message, '->', error.response.data.message);
+      console.error(`Error calling ${method} ${path}:`, error.message, '-', error.response.data.message);
       throw error.response.data.message;
     } else {
       console.error(`Error calling ${method} ${path}:`, error);
