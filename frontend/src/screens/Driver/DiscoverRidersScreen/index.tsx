@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, FlatList, SafeAreaView, Button } from "react-native";
 import RiderPostedCard from "../../../components/RiderPostedCard";
 import ridersData from "../../../../assets/data/riders";
@@ -11,6 +11,7 @@ import styles from "./styles";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from "../../../navigation/RootNavigator";
+import { OrderService } from "../../../services/OrderService";
 
 type DiscoverScreenNavigationProp = StackNavigationProp<
     RootStackParamList,

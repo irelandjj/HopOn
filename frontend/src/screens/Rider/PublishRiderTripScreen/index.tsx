@@ -53,7 +53,7 @@ const PublishRiderTripScreen = () => {
     useEffect(() => {
         const getActiveOrder = async () => {
             try {
-                const response = await OrderService.getRiderActiveOrder()
+                const response = await OrderService.getRiderActiveOrder();
                 const data = await response.json();
                 console.log(data);
             } catch (error) {
