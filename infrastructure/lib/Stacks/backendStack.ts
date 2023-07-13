@@ -25,7 +25,7 @@ export class BackendStack extends Stack {
     this.usersTable = this.createDynamodb('Users', 'UserID')
     this.ordersTable = this.createDynamodb('Orders', 'OrderID', 'RiderID')
     this.driversConnectionTable = this.createDynamodb('DriversConnection', 'ConnectionID')
-    
+
     this.cognitoLambdaTrigger()
     this.createApi()
     this.createWebSocketApi()
@@ -38,14 +38,14 @@ export class BackendStack extends Stack {
       tableConnections: this.driversConnectionTable,
     })
   }
-  createDynamodb(tableName: string, partitionKey: string, gsi?: string): ddb.Table  {
+  createDynamodb(tableName: string, partitionKey: string, gsi?: string): ddb.Table {
     const table = new ddb.Table(this, `${tableName}-table`, {
       partitionKey: { name: partitionKey, type: ddb.AttributeType.STRING },
       billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       tableName: tableName,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
-  
+
     // Check if gsi (global secondary index) parameter is provided
     if (gsi) {
       table.addGlobalSecondaryIndex({
@@ -63,17 +63,24 @@ export class BackendStack extends Stack {
       endpoints: [
         {
           endpoint: 'orders',
-          method: 'post',
-          envVars: {tableName: 'Orders'},
+          method: 'POST',
+          envVars: { tableName: 'Orders' },
           managedPolicy: 'AmazonDynamoDBFullAccess'
         },
+        {
+          endpoint: 'orders',
+          method: 'GET',
+          envVars: { tableName: 'Orders' },
+          managedPolicy: 'AmazonDynamoDBReadOnlyAccess'
+        }
       ],
       userPoolArn: this.userPool.userPoolArn
-    })
+    });
   }
+
   cognitoLambdaTrigger() {
     const lambdaTrigger = new lambdanodejs.NodejsFunction(this, 'cognito-lambda-trigger', {
-      runtime:lambda.Runtime.NODEJS_18_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: './lib/Constructs/cognito/src/lambdaTrigger.ts',
       environment: {
         tableName: this.usersTable.tableName
@@ -97,7 +104,7 @@ export class BackendStack extends Stack {
           LambdaConfig: {
             PostConfirmation: lambdaTrigger.functionArn
           },
-          UserAttributeUpdateSettings: { 
+          UserAttributeUpdateSettings: {
             AttributesRequireVerificationBeforeUpdate: []
           },
         },
@@ -114,9 +121,9 @@ export class BackendStack extends Stack {
   }
 }
 
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+

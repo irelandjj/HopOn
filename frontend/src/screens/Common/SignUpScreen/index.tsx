@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput, Button, Modal, Text } from 'react-native';
-import { AuthorizationService } from '../../services/AuthorizationService';
+import { AuthorizationService } from '../../../services/AuthorizationService';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from "../../navigation/RootNavigator";
+import { RootStackParamList } from "../../../navigation/RootNavigator";
 import styles from './styles';
-import { isEmailValid, isPasswordValid } from '../../utils/validation';
+import { isEmailValid, isPasswordValid } from '../../../utils/validation';
 
 type SignUpScreenNavigationProp = StackNavigationProp<
   RootStackParamList,

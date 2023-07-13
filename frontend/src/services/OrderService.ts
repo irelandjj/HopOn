@@ -1,54 +1,30 @@
-import { API } from 'aws-amplify';
-import { API_NAME, API_PATH_ORDERS } from "@env"
-import { CreateOrderPayload, UpdateOrderPayload } from '../shared/types/OrderTypes';
-
-async function createOrderApi(path: string, data: CreateOrderPayload) {
-    const request = {
-        body: data,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-    };
-
-    try {
-        const response = await API.post(API_NAME, path, request);
-        return response;
-    } catch (error: any) {
-        if (error.response && error.response.data) {
-            console.error(`Error calling POST ${path}:`, error.message, '->', error.response.data.message);
-            throw error.response.data.message;
-        } else {
-            console.error(`Error calling POST ${path}:`, error);
-            throw error;
-        }
-    }
-}
-
-async function updateOrderApi(path: string, data: UpdateOrderPayload) {
-    const request = {
-        body: data,
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-    };
-
-    try {
-        const response = await API.put(API_NAME, path, request);
-        return response;
-    } catch (error) {
-        console.error(`Error calling PUT ${path}:`, error);
-        throw error;
-    }
-}
+import { callApi } from './ApiService';
+import { API_PATH_ORDERS } from "@env"
+import { CreateOrderPayload } from '../shared/types/OrderTypes';
+import { AuthorizationService } from './AuthorizationService';
 
 export const OrderService = {
-    createOrder: async (orderData: CreateOrderPayload) => {
-        return createOrderApi(`/${API_PATH_ORDERS}`, orderData);
+    createOrder: async (orderData: CreateOrderPayload): Promise<any> => {
+        const path = `/${API_PATH_ORDERS}`;
+        return callApi('POST', path, orderData);
     },
 
-    updateOrder: async (orderId: string, updatedData: UpdateOrderPayload) => {
-        return updateOrderApi(`/${API_PATH_ORDERS}/${orderId}`, updatedData);
-    }
+    getRiderActiveOrder: async (): Promise<any> => {
+
+        const path = `/${API_PATH_ORDERS}`;
+        const queryParams = {
+            rideStatus: 'active',
+            riderId: await AuthorizationService.getCurrentUserId()
+        }
+        return callApi('GET', path, undefined, queryParams);
+    },
+
+    getAllActiveOrders: async (): Promise<any> => {
+
+        const path = `/${API_PATH_ORDERS}`;
+        const params = {
+            rideStatus: 'active',
+        }
+        return callApi('GET', path, params);
+    },
 };

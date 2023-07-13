@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const newOrderId = uuidv4();
 
-const ddb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 'us-east-1' })
+const dynamoDb = new AWS.DynamoDB.DocumentClient({ apiVersion: '2012-08-10', region: 'us-east-1' })
 
 const { tableName } = process.env
 
@@ -72,7 +72,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
       }
     };
 
-    await ddb.put(params).promise();
+    await dynamoDb.put(params).promise();
     return {
       statusCode: 200,
       body: JSON.stringify({ message: 'Order added successfully' }),
@@ -99,7 +99,7 @@ async function getActiveRide(cognitoUserId: string): Promise<AWS.DynamoDB.ItemLi
     FilterExpression: 'RideStatus <> :completed',
   };
 
-  const result = await ddb.query(params).promise();
+  const result = await dynamoDb.query(params).promise();
   if (result.Count) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return result.Items!;

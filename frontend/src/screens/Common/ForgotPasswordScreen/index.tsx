@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, Modal, Text } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from "../../navigation/RootNavigator";
+import { RootStackParamList } from "../../../navigation/RootNavigator";
 import styles from './styles';
-import { AuthorizationService } from '../../services/AuthorizationService';
+import { AuthorizationService } from '../../../services/AuthorizationService';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { isEmailValid, isPasswordValid } from '../../utils/validation';
+import { isEmailValid, isPasswordValid } from '../../../utils/validation';
 
 type ForgotPasswordScreenNavigationProp = StackNavigationProp<
     RootStackParamList,

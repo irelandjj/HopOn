@@ -63,6 +63,18 @@ export const AuthorizationService = {
         }
     },
 
+    getCurrentUserId: async (): Promise<string | undefined> => {
+        try {
+            const user = await Auth.currentAuthenticatedUser();
+            const attributes = await Auth.userAttributes(user);
+            const userIdAttribute = attributes.find(attribute => attribute.Name === 'sub');
+            return userIdAttribute ? userIdAttribute.Value : undefined;
+        } catch (error) {
+            console.error('Error fetching user ID:', error);
+            return undefined;
+        }
+    },
+
     currentAuthenticatedUser: async () => {
         try {
             const user = await Auth.currentAuthenticatedUser();

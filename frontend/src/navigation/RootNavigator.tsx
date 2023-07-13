@@ -1,15 +1,15 @@
 import React from "react";
 import { NavigationContainer } from '@react-navigation/native';
-import PublishRiderTripScreen from "../screens/PublishRiderTripScreen";
-import DiscoverRidersScreen from '../screens/DiscoverRidersScreen';
-import HomeScreen from '../screens/HomeScreen';
-import SignInScreen from '../screens/SignInScreen';
-import SignUpScreen from '../screens/SignUpScreen';
-import LoadingScreen from '../screens/LoadingScreen';
+import PublishRiderTripScreen from "../screens/Rider/PublishRiderTripScreen";
+import DiscoverRidersScreen from '../screens/Driver/DiscoverRidersScreen';
+import HomeScreen from '../screens/Common/HomeScreen';
+import SignInScreen from '../screens/Common/SignInScreen';
+import SignUpScreen from '../screens/Common/SignUpScreen';
+import LoadingScreen from '../screens/Common/LoadingScreen';
 import { createStackNavigator } from "@react-navigation/stack";
 import 'react-native-gesture-handler';
-import AuthenticationScreen from "../screens/AuthenticationScreen";
-import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import AuthenticationScreen from "../screens/Common/AuthenticationScreen";
+import ForgotPasswordScreen from "../screens/Common/ForgotPasswordScreen";
 
 export type RootStackParamList = {
     ForgotPassword: undefined,

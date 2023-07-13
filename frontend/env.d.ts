@@ -5,5 +5,6 @@ declare module '@env' {
     export const API_ENDPOINT: string;
     export const API_PATH_ORDERS: string;
     export const DEPLOYMENT_STAGE_PROD: string;
+    export const GOOGLE_MAPS_API_KEY: string;
 }
   
