@@ -17,6 +17,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     }
 
     if (httpMethod === 'GET') {
+        // Get the active order for the rider
         if (queryStringParameters && queryStringParameters.riderId && queryStringParameters?.rideStatus === 'active') {
 
             const riderId = queryStringParameters.riderId;
@@ -30,22 +31,27 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
             const params = {
                 TableName: tableName!,
-                KeyConditionExpression: "riderId = :riderId",
-                FilterExpression: "rideStatus IN (:status1, :status2, :status3, :status4)",
+                IndexName: 'RiderID-index',
+                KeyConditionExpression: 'RiderID = :riderID',
+                FilterExpression: 'RideStatus = :status1 OR RideStatus = :status2 OR RideStatus = :status3 OR RideStatus = :status4',
                 ExpressionAttributeValues: {
-                    ":riderId": riderId,
-                    ":status1": RideStatus.Requested,
-                    ":status2": RideStatus.Accepted,
-                    ":status3": RideStatus.Arrived,
-                    ":status4": RideStatus.InProgress
-                }
+                    ':riderID': riderId,
+                    ':status1': RideStatus.Requested,
+                    ':status2': RideStatus.Accepted,
+                    ':status3': RideStatus.Arrived,
+                    ':status4': RideStatus.InProgress
+                },
             };
+
+            console.log('Query parameters:', params); // Log the parameters
 
             try {
                 const result = await dynamoDb.query(params).promise();
+                console.log('Query result:', result); // Log the result. Consider using cloudwatch alarms to monitor whether there are more than one active orders per rider.
+                const firstItem = result && result.Items && result.Items.length > 0 ? result.Items[0] : null;
                 return {
                     statusCode: 200,
-                    body: JSON.stringify(result.Items),
+                    body: JSON.stringify(firstItem),
                 };
             } catch (error) {
                 console.error(error);
@@ -54,12 +60,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
                     body: JSON.stringify({ message: 'Error fetching the orders for the rider' }),
                 };
             }
-
+        // Get all active orders
         } else if (queryStringParameters && queryStringParameters?.rideStatus === 'active') {
 
             const params = {
                 TableName: tableName!,
-                FilterExpression: "rideStatus IN (:status1, :status2, :status3, :status4)",
+                FilterExpression: "contains (rideStatus, :status1) OR contains (rideStatus, :status2) OR contains (rideStatus, :status3) OR contains (rideStatus, :status4)",
                 ExpressionAttributeValues: {
                     ":status1": RideStatus.Requested,
                     ":status2": RideStatus.Accepted,

@@ -30,6 +30,7 @@ const PublishRiderTripScreen = () => {
     const [location, setLocation] = useState<GeoPosition | null>(null);
     const [isPublishingRide, setIsPublishingRide] = useState(false);
     const [hasUserPublishedRide, setHasUserPublishedRide] = useState(false);
+    const [activeOrder, setActiveOrder] = useState(null);
 
     const navigation = useNavigation<PublishScreenNavigationProp>();
 
@@ -53,11 +54,22 @@ const PublishRiderTripScreen = () => {
     useEffect(() => {
         const getActiveOrder = async () => {
             try {
-                const response = await OrderService.getRiderActiveOrder();
-                const data = await response.json();
-                console.log(data);
+                const activeOrderResponse = await OrderService.getRiderActiveOrder();
+                setActiveOrder(activeOrderResponse);
+                if (activeOrderResponse) {
+                    Alert.alert(
+                        "Active Order",
+                        `There is already an active order. Order ID: ${activeOrderResponse.OrderID}`,
+                        [
+                            {
+                                text: "OK",
+                                onPress: () => console.log("OK Pressed")
+                            }
+                        ]
+                    );
+                }
             } catch (error) {
-                console.error(error);
+                console.error("Error: ", error);
             }
         };
 
