@@ -62,10 +62,12 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         'Origin': {
           'latitude': requestBody.pickupLocation.latitude,
           'longitude': requestBody.pickupLocation.longitude,
+          'name': requestBody.pickupLocation.name,
         },
         'Destination': {
           'latitude': requestBody.dropoffLocation.latitude,
           'longitude': requestBody.dropoffLocation.longitude,
+          'name': requestBody.dropoffLocation.name,
         },
         'RideStatus': requestBody.rideStatus,
         'Distance': 10,

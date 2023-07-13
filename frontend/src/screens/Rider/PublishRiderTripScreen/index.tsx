@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import PressableButton from "../../../components/PressableButton";
 import { colors } from "../../../utils/globalStyles";
 import { OrderService } from "../../../services/OrderService";
-import { CreateOrderPayload } from "../../../shared/types/OrderTypes";
+import { CreateOrderPayload, Location } from "../../../shared/types/OrderTypes";
 import { RideStatus } from "../../../shared/enums/RideStatus";
 import { GOOGLE_MAPS_API_KEY } from "@env"
 
@@ -24,8 +24,8 @@ type PublishScreenNavigationProp = StackNavigationProp<
 >;
 
 const PublishRiderTripScreen = () => {
-    const [originPlace, setOriginPlace] = useState<any | null>(null)
-    const [destinationPlace, setDestinationPlace] = useState<any | null>(null)
+    const [originPlace, setOriginPlace] = useState<Location | null>(null)
+    const [destinationPlace, setDestinationPlace] = useState<Location | null>(null)
     const [isPublishButtonEnabled, setIsPublishButtonEnabled] = useState(false)
     const [location, setLocation] = useState<GeoPosition | null>(null);
     const [isPublishingRide, setIsPublishingRide] = useState(false);
@@ -59,7 +59,7 @@ const PublishRiderTripScreen = () => {
                 if (activeOrderResponse) {
                     Alert.alert(
                         "Active Order",
-                        `There is already an active order. Order ID: ${activeOrderResponse.OrderID}`,
+                        `There is already an active order.\n\nFrom: ${activeOrderResponse.Origin.name}\n\nTo: ${activeOrderResponse.Destination.name}`,
                         [
                             {
                                 text: "OK",
@@ -90,8 +90,8 @@ const PublishRiderTripScreen = () => {
         try {
             const newOrderData: CreateOrderPayload = {
                 rideStatus: RideStatus.Requested,
-                pickupLocation: originPlace,
-                dropoffLocation: destinationPlace,
+                pickupLocation: originPlace as Location,
+                dropoffLocation: destinationPlace as Location,
             };
 
             setIsPublishingRide(true);
@@ -157,7 +157,16 @@ const PublishRiderTripScreen = () => {
                         }}
                         fetchDetails={true}
                         onPress={(data, details = null) => {
-                            setOriginPlace({ latitude: details?.geometry.location.lat, longitude: details?.geometry.location.lng })
+                            if (details) {
+                                const originAddress = details.formatted_address;
+                                const originName = details.name;
+                                const originFullAddress = originName + ', ' + originAddress;
+                                setOriginPlace({ 
+                                    latitude: details.geometry.location.lat, 
+                                    longitude: details.geometry.location.lng, 
+                                    name: originFullAddress,
+                                })
+                            }
                         }}
                         onNotFound={() => {
                             setOriginPlace(null)
@@ -195,7 +204,16 @@ const PublishRiderTripScreen = () => {
                         }}
                         fetchDetails={true}
                         onPress={(data, details = null) => {
-                            setDestinationPlace({ latitude: details?.geometry.location.lat, longitude: details?.geometry.location.lng })
+                            if (details) {
+                                const destinationAddress = details.formatted_address;
+                                const destinationName = details.name;
+                                const destinationFullAddress = destinationName + ', ' + destinationAddress;                                
+                                setDestinationPlace({ 
+                                    latitude: details.geometry.location.lat, 
+                                    longitude: details.geometry.location.lng, 
+                                    name: destinationFullAddress,
+                                })
+                            }
                         }}
                         onNotFound={() => {
                             setDestinationPlace(null)
