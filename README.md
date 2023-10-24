@@ -3,5 +3,6 @@ HopOn is a real-time carpooling app connecting drivers and riders, promoting cos
 
 ## Technologies Used
 - Frontend: React Native
-- Backend: Node.js with TypeScript
+- API: AWS API Gateway
+- Backend: TypeScript Lambda functions running on Node.js
 - Database: Amazon DynamoDB
